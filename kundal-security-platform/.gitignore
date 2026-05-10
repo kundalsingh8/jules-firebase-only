@@ -18,3 +18,4 @@ web-app/node_modules/
 mobile-app/.dart_tool/
 mobile-app/build/
 mobile-app/.pub-cache/
+serviceAccountKey.json
