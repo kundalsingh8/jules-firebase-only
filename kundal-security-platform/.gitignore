@@ -1,0 +1,20 @@
+# global
+node_modules/
+node_modules
+*/node_modules/
+*/node_modules
+*.log
+
+# functions
+functions/lib/
+functions/node_modules/
+
+# web
+web-app/dist/
+web-app/node_modules/
+.env
+
+# mobile
+mobile-app/.dart_tool/
+mobile-app/build/
+mobile-app/.pub-cache/
