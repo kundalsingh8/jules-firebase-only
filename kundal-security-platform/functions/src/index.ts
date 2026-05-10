@@ -1,7 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { defineSecret } from 'firebase-functions/params';
 
 admin.initializeApp();
+
+const SUPER_ADMIN_SETUP_SECRET = defineSecret('SUPER_ADMIN_SETUP_SECRET');
 
 // ----------------------------------------------------------------------------
 // Authentication & Role Management
@@ -106,10 +109,12 @@ export const notifyResidentOnVisitorEntry = functions.firestore
 // Helper/Mock Endpoints
 // ----------------------------------------------------------------------------
 
-export const setupSuperAdmin = functions.https.onRequest(async (req, res) => {
-    // SECURITY: In production, remove this or secure it via secret key
+export const setupSuperAdmin = functions
+    .runWith({ secrets: [SUPER_ADMIN_SETUP_SECRET] })
+    .https.onRequest(async (req, res) => {
+    // SECURITY: Secured via Firebase Secret Manager
     const secret = req.query.secret;
-    if (secret !== 'kundal_init_secret_2024') {
+    if (secret !== SUPER_ADMIN_SETUP_SECRET.value()) {
         res.status(403).send('Forbidden');
         return;
     }
