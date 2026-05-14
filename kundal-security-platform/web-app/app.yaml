@@ -1,0 +1,19 @@
+runtime: nodejs18
+env: standard
+
+handlers:
+  # Serve all static files with url routing
+  - url: /(.*\..+)$
+    static_files: dist/\1
+    upload: dist/(.*\..+)$
+
+  # Catch all handler to index.html for React Router
+  - url: /.*
+    static_files: dist/index.html
+    upload: dist/index.html
+
+# Skip deploying node_modules
+skip_files:
+  - node_modules/
+  - ^\.git/.*$
+  - src/
