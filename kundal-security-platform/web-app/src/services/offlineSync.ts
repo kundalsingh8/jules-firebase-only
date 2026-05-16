@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 // In a real application, we would use localForage or a more robust IndexedDB wrapper.
 // Here we set up a basic offline queue pattern.
