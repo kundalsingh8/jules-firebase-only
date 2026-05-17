@@ -5,12 +5,44 @@ import { Login } from './pages/Login';
 import { SuperAdminDashboard } from './pages/SuperAdminDashboard';
 import { Sites } from './pages/Sites';
 import { Personnel } from './pages/Personnel';
+import { Layout } from './components/Layout';
 
-// Placeholders for other roles
-const AreaOfficerDashboard = () => <div className="p-8 font-bold">Area Officer Dashboard</div>;
-const SiteAdminDashboard = () => <div className="p-8 font-bold">Site Admin Dashboard</div>;
-const ResidentDashboard = () => <div className="p-8 font-bold">Resident Dashboard</div>;
-const GuardDashboard = () => <div className="p-8 font-bold">Guard Dashboard</div>;
+// Shells for other roles
+const AreaOfficerDashboard = () => (
+  <Layout title="Area Officer Dashboard">
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4">Welcome, Area Officer</h2>
+      <p className="text-gray-600">Your sites and assigned guards overview will appear here.</p>
+    </div>
+  </Layout>
+);
+
+const SiteAdminDashboard = () => (
+  <Layout title="Site Admin Dashboard">
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4">Welcome, Site Admin</h2>
+      <p className="text-gray-600">Manage your site's security settings and view reports here.</p>
+    </div>
+  </Layout>
+);
+
+const ResidentDashboard = () => (
+  <Layout title="Resident Dashboard">
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4">Welcome, Resident</h2>
+      <p className="text-gray-600">View recent society updates and log visitors here.</p>
+    </div>
+  </Layout>
+);
+
+const GuardDashboard = () => (
+  <Layout title="Guard Dashboard">
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4">Welcome, Guard</h2>
+      <p className="text-gray-600">Manage visitors, attendance, and log incidents here.</p>
+    </div>
+  </Layout>
+);
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const { currentUser, userData, loading } = useAuth();
@@ -18,7 +50,9 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
   if (!currentUser) return <Navigate to="/login" />;
 
-  if (allowedRoles && userData && !allowedRoles.includes(userData.role)) {
+  const userRole = userData?.role || 'resident';
+
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
     return <Navigate to="/unauthorized" />;
   }
 
@@ -30,12 +64,9 @@ const RoleBasedRedirect = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
 
-  if (!userData?.role) {
-    // If no role assigned yet, default to resident or basic view
-    return <Navigate to="/dashboard/resident" />;
-  }
+  const userRole = userData?.role || 'resident';
 
-  switch (userData.role) {
+  switch (userRole) {
     case 'super_admin':
     case 'company_admin':
       return <Navigate to="/dashboard/super-admin" />;
@@ -94,19 +125,39 @@ function App() {
           } />
 
           <Route path="/sites" element={
-            <ProtectedRoute allowedRoles={['super_admin', 'company_admin']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'company_admin', 'area_officer', 'guard_supervisor']}>
               <Sites />
             </ProtectedRoute>
           } />
+
           <Route path="/personnel" element={
-            <ProtectedRoute allowedRoles={['super_admin', 'company_admin', 'area_officer']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'company_admin', 'area_officer', 'guard_supervisor', 'society_admin']}>
               <Personnel />
             </ProtectedRoute>
           } />
 
           {/* Fallbacks */}
-          <Route path="/incidents" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
-          <Route path="/reports" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
+          <Route path="/incidents" element={
+            <ProtectedRoute allowedRoles={['super_admin', 'company_admin', 'area_officer', 'guard_supervisor', 'society_admin', 'guard', 'resident']}>
+              <Layout title="Incidents">
+                <div className="bg-white shadow rounded-lg p-6">
+                  <h2 className="text-xl font-bold mb-4">Incidents Log</h2>
+                  <p className="text-gray-600">Incident reports will appear here.</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/reports" element={
+            <ProtectedRoute allowedRoles={['super_admin', 'company_admin', 'area_officer', 'guard_supervisor', 'society_admin']}>
+              <Layout title="Reports">
+                <div className="bg-white shadow rounded-lg p-6">
+                  <h2 className="text-xl font-bold mb-4">Reports & Analytics</h2>
+                  <p className="text-gray-600">Data analytics and reports will appear here.</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          } />
         </Routes>
       </Router>
     </AuthProvider>
