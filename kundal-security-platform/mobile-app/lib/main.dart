@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'providers/auth_provider.dart';
+import 'providers/shift_provider.dart';
+import 'services/sync_service.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/guard/guard_dashboard.dart';
+import 'screens/officer/officer_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase (Requires config generation via flutterfire configure)
+
+  await Hive.initFlutter();
+
+  // Note: Firebase initialization needs actual google-services.json/GoogleService-Info.plist config
   // await Firebase.initializeApp();
 
-  // Enable offline persistence
-  // FirebaseFirestore.instance.settings = const Settings(
-  //   persistenceEnabled: true,
-  //   cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-  // );
+  final syncService = SyncService();
+  await syncService.init();
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ShiftProvider(syncService)),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -31,11 +45,33 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Kundal Security App (Flutter)'),
-        ),
-      ),
+      home: const AuthWrapper(),
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        if (auth.isLoading) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        if (auth.currentUser == null) {
+          return const LoginScreen();
+        }
+
+        // Return screen based on role
+        if (auth.userModel?.role == 'area_officer' || auth.userModel?.role == 'guard_supervisor') {
+          return const OfficerDashboard();
+        }
+
+        return const GuardDashboard();
+      },
     );
   }
 }
