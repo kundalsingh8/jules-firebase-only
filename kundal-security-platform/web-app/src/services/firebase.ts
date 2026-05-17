@@ -7,6 +7,7 @@ import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 // Replace with actual config in production
 const firebaseConfig = {
   apiKey: "demo-api-key",
+  // Crucially, this needs to be an HTTPS enabled domain in production
   authDomain: "demo-project.firebaseapp.com",
   projectId: "kundal-security-platform",
   storageBucket: "demo-project.appspot.com",
@@ -27,8 +28,8 @@ export const storage = getStorage(app);
 export const functions = getFunctions(app);
 
 // Use emulators if running locally
-if (window.location.hostname === "localhost") {
-  connectAuthEmulator(auth, "http://127.0.0.1:9099");
+if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
   connectStorageEmulator(storage, "127.0.0.1", 9199);
   connectFunctionsEmulator(functions, "127.0.0.1", 5001);
