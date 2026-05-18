@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout } from '../components/Layout';
+import { Layout } from '../../layouts/Layout';
 import { PlusIcon } from '@heroicons/react/24/outline';
 
 export const Sites: React.FC = () => {

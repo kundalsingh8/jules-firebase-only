@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { auth } from '../services/firebase';
+import { auth } from '../../services/firebase';
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -8,7 +8,7 @@ import {
   signInWithPhoneNumber,
   type ConfirmationResult
 } from 'firebase/auth';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const Login: React.FC = () => {
   const { currentUser, loading } = useAuth();

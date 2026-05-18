@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout } from '../components/Layout';
+import { Layout } from '../layouts/Layout';
 import { collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { UsersIcon, BuildingOfficeIcon, ShieldExclamationIcon, CurrencyRupeeIcon, ChartBarIcon } from '@heroicons/react/24/outline';
