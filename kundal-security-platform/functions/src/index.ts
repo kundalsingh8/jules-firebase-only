@@ -128,3 +128,47 @@ export const setupSuperAdmin = functions.https.onRequest(async (req, res) => {
 
     res.send({ success: true, message: 'Super admin created' });
 });
+
+// ----------------------------------------------------------------------------
+// Utility endpoint to add an admin during development
+// ----------------------------------------------------------------------------
+export const addInitialAdmin = functions.https.onRequest(async (req, res) => {
+    // SECURITY: In production, remove this or secure it via secret key
+    const secret = req.query.secret;
+    if (secret !== 'kundal_init_secret_2024') {
+        res.status(403).send('Forbidden');
+        return;
+    }
+
+    const email = req.query.email as string || 'kundalsingh2016@gmail.com';
+
+    try {
+        let uid;
+        try {
+            const userRecord = await admin.auth().getUserByEmail(email);
+            uid = userRecord.uid;
+        } catch (error: any) {
+            if (error.code === 'auth/user-not-found') {
+                const userRecord = await admin.auth().createUser({
+                    email: email,
+                    emailVerified: true,
+                    password: 'Password123!',
+                });
+                uid = userRecord.uid;
+            } else {
+                throw error;
+            }
+        }
+
+        await admin.auth().setCustomUserClaims(uid, { role: 'super_admin' });
+        await admin.firestore().collection('users').doc(uid).set({
+            email: email,
+            role: 'super_admin',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        res.send({ success: true, message: `Super admin access granted to ${email}` });
+    } catch (error: any) {
+        res.status(500).send({ error: error.message });
+    }
+});
