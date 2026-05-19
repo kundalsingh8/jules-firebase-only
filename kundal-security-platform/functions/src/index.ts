@@ -25,6 +25,18 @@ export const assignRole = functions.https.onCall(async (data, context) => {
       throw new functions.https.HttpsError('invalid-argument', 'Missing targetUid or role');
   }
 
+  // Privilege escalation check
+  const roleHierarchy: Record<string, string[]> = {
+    super_admin: ['company_admin', 'area_officer', 'society_admin', 'guard_supervisor', 'guard', 'resident', 'super_admin'],
+    company_admin: ['area_officer', 'society_admin', 'guard_supervisor', 'guard', 'resident'],
+    society_admin: ['guard_supervisor', 'guard', 'resident']
+  };
+
+  const allowedRoles = roleHierarchy[callerClaims.role] || [];
+  if (!allowedRoles.includes(role)) {
+    throw new functions.https.HttpsError('permission-denied', `${callerClaims.role} cannot assign role ${role}`);
+  }
+
   // Basic RBAC guard: Society admins can only assign roles within their society
   if (callerClaims.role === 'society_admin' && callerClaims.societyId !== societyId) {
       throw new functions.https.HttpsError('permission-denied', 'Cannot assign role for another society');
