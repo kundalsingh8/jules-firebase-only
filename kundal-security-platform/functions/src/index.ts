@@ -1,5 +1,8 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { defineSecret } from 'firebase-functions/params';
+
+const KUNDAL_INIT_SECRET = defineSecret('KUNDAL_INIT_SECRET');
 
 admin.initializeApp();
 
@@ -106,10 +109,9 @@ export const notifyResidentOnVisitorEntry = functions.firestore
 // Helper/Mock Endpoints
 // ----------------------------------------------------------------------------
 
-export const setupSuperAdmin = functions.https.onRequest(async (req, res) => {
-    // SECURITY: In production, remove this or secure it via secret key
+export const setupSuperAdmin = functions.runWith({ secrets: [KUNDAL_INIT_SECRET] }).https.onRequest(async (req, res) => {
     const secret = req.query.secret;
-    if (secret !== 'kundal_init_secret_2024') {
+    if (secret !== KUNDAL_INIT_SECRET.value()) {
         res.status(403).send('Forbidden');
         return;
     }
